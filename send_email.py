@@ -2,14 +2,24 @@ import os
 import smtplib
 from email.message import EmailMessage
 
-# Read credentials from environment variables (passed by GitHub Actions)
-EMAIL_ADDRESS = os.environ.get("MAIL_USERNAME")
-EMAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-RECEIVER_EMAIL = os.environ.get("MAIL_RECEIVER", EMAIL_ADDRESS)
+# Read exact secret names from environment variables
+EMAIL_ADDRESS = os.environ.get("MAIL_USER")
+EMAIL_PASSWORD = os.environ.get("MAIL_PASS")
 
-# Open the report file (fixing the FileNotFoundError from earlier)
-with open("report.json", "r") as f:
-  report_data = f.read()
+# Fallback chain for the recipient email
+RECEIVER_EMAIL = (
+    os.environ.get("MAIL_RECEIVER")
+    or os.environ.get("MAIL_TO")
+    or EMAIL_ADDRESS
+)
+
+# Open your report file (adjust name if it's test-report.json)
+try:
+  with open("report.json", "r") as f:
+    report_data = f.read()
+except FileNotFoundError:
+  with open("test-report.json", "r") as f:
+    report_data = f.read()
 
 # Build the email
 msg = EmailMessage()
@@ -20,7 +30,7 @@ msg.set_content(
     f"Here is your automated report generated from GitHub Actions:\n\n{report_data}"
 )
 
-# Send the email via SMTP (using Gmail as an example)
+# Send the email via Gmail SMTP
 try:
   with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
     smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
