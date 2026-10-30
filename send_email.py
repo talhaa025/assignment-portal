@@ -1,40 +1,30 @@
-import json, os, smtplib
+import os
+import smtplib
 from email.message import EmailMessage
 
-with open("final-report.json") as f:
-    r = json.load(f)
+# Read credentials from environment variables (passed by GitHub Actions)
+EMAIL_ADDRESS = os.environ.get("MAIL_USERNAME")
+EMAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+RECEIVER_EMAIL = os.environ.get("MAIL_RECEIVER", EMAIL_ADDRESS)
 
-s = r["summary"]
-sha = str(r["commit_sha"])
+# Open the report file (fixing the FileNotFoundError from earlier)
+with open("report.json", "r") as f:
+  report_data = f.read()
 
-lines = [
-    f"Repository : {r['repository']}",
-    f"Branch     : {r['branch']}",
-    f"Commit     : {sha}",
-    f"Run ID     : {r['run_id']}",
-    f"Time (UTC) : {r['timestamp']}",
-    "",
-    f"OVERALL RESULT: {s['status']}",
-    f"Total: {s['total']}  Passed: {s['passed']}  Failed: {s['failed']}",
-    "",
-    "Individual results:",
-]
-for t in r["tests"]:
-    line = f"  [{t['result'].upper()}] {t['name']}"
-    if t["failure_message"]:
-        line += f"\n      {t['failure_message']}"
-    lines.append(line)
-
+# Build the email
 msg = EmailMessage()
-msg["Subject"] = f"[CI {s['status']}] {r['repository']} @ {sha[:7]}"
-msg["From"] = os.environ["MAIL_USER"]
-msg["To"] = os.environ["MAIL_TO"]
-msg.set_content("\n".join(lines))
-msg.add_attachment(json.dumps(r, indent=2).encode(),
-                   maintype="application", subtype="json",
-                   filename="test-report.json")
+msg.Subject = "Automated Assignment Report"
+msg.From = EMAIL_ADDRESS
+msg.To = RECEIVER_EMAIL
+msg.set_content(
+    f"Here is your automated report generated from GitHub Actions:\n\n{report_data}"
+)
 
-with smtplib.SMTP_SSL(os.environ["MAIL_SERVER"], 465) as server:
-    server.login(os.environ["MAIL_USER"], os.environ["MAIL_PASS"])
-    server.send_message(msg)
-print("Email sent to", os.environ["MAIL_TO"])
+# Send the email via SMTP (using Gmail as an example)
+try:
+  with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+    smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+    smtp.send_message(msg)
+  print("Email sent successfully!")
+except Exception as e:
+  print(f"Failed to send email: {e}")
