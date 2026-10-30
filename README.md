@@ -25,8 +25,8 @@ The receiver listens on http://127.0.0.1:5001 and saves each incoming report as 
 
 ## CI pipeline
 - Workflow: `.github/workflows/ci.yml`, triggered on every push.
-- It runs on a **self-hosted runner** on my computer, so `localhost` reaches the receiver.
-- `build_report.py` builds the JSON report (repository, branch, commit SHA, run id, timestamp, per-test results, totals, status) and POSTs it to the receiver. This step uses `if: always()`, so a report is sent for passing and failing runs.
+- It runs on a self-hosted runner on my computer, so `localhost` reaches the receiver.
+- `build_report.py` builds the JSON report (repository, branch, commit SHA, run id, timestamp, per-test results, totals, overall status) and POSTs it to the receiver. The step uses `if: always()`, so reports are sent for passing and failing runs.
 
 ## Start the runner
 ```
