@@ -25,8 +25,7 @@ def validate(form):
                          ("title", "Assignment title"), ("url", "Submission URL")]:
         if not form.get(field, "").strip():
             errors.append(f"{label} is required")
-    # DEFECT (email demo): URL validation is disabled on purpose
-    if False:
+    if form.get("url", "").strip() and not valid_url(form["url"].strip()):
         errors.append("Submission URL is invalid")
     return errors
 
