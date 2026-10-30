@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assignment Submission Portal (Demo)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; padding: 40px 16px; color: #1f2937;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #1e1b4b, #312e81 55%, #4338ca); }
+  .container { max-width: 700px; margin: 0 auto; }
+  header { text-align: center; color: #fff; margin-bottom: 24px; }
+  header h1 { margin: 8px 0 4px; }
+  .card { background: #fff; border-radius: 16px; padding: 26px; margin-bottom: 22px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.18); }
+  label { display: block; font-size: .85rem; font-weight: 600; margin: 12px 0 6px; color: #4b5563; }
+  input { width: 100%; padding: 11px 13px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; }
+  button { width: 100%; margin-top: 18px; padding: 12px; border: 0; border-radius: 10px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; }
+  .alert { padding: 10px 14px; border-radius: 10px; margin-bottom: 8px; }
+  .error { background: #fef2f2; color: #b91c1c; }
+  .success { background: #ecfdf5; color: #047857; }
+  .item { padding: 12px; border: 1px solid #eef0f4; border-radius: 10px; margin-bottom: 8px; }
+  .item small { color: #6b7280; }
+  footer { text-align: center; color: rgba(255,255,255,.75); font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div style="font-size:2.4rem">🎓</div>
+    <h1>Assignment Submission Portal</h1>
+    <p>Static demo (the full Flask app runs locally)</p>
+  </header>
+
+  <div class="card">
+    <h2>New submission</h2>
+    <div id="messages"></div>
+    <label>Full name</label><input id="name" placeholder="e.g. Ali Khan">
+    <label>Registration number</label><input id="reg_no" placeholder="e.g. FA23-BS-025">
+    <label>Assignment title</label><input id="title" placeholder="e.g. DevOps Lab 1">
+    <label>Submission URL</label><input id="url" placeholder="https://github.com/you/project">
+    <button id="submit">Submit assignment</button>
+  </div>
+
+  <div class="card">
+    <h2>Saved submissions (this session)</h2>
+    <div id="list"><p style="color:#9ca3af">No submissions yet.</p></div>
+  </div>
+  <footer>CSC418 DevOps &middot; Lab Midterm</footer>
+</div>
+
+<script>
+  const items = [];
+  const fields = [["name","Name"],["reg_no","Registration number"],["title","Assignment title"],["url","Submission URL"]];
+  const validUrl = u => { try { const p = new URL(u); return p.protocol === "http:" || p.protocol === "https:"; } catch { return false; } };
+  const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  document.getElementById("submit").onclick = () => {
+    const v = {}, errors = [];
+    fields.forEach(([id, label]) => {
+      v[id] = document.getElementById(id).value.trim();
+      if (!v[id]) errors.push(label + " is required");
+    });
+    if (v.url && !validUrl(v.url)) errors.push("Submission URL is invalid");
+    const box = document.getElementById("messages");
+    if (errors.length) {
+      box.innerHTML = errors.map(e => '<div class="alert error">' + esc(e) + '</div>').join("");
+      return;
+    }
+    items.push(v);
+    box.innerHTML = '<div class="alert success">Submission saved!</div>';
+    document.getElementById("list").innerHTML = items.map(s =>
+      '<div class="item"><strong>' + esc(s.title) + '</strong><br><small>' + esc(s.name) + ' &middot; ' +
+      esc(s.reg_no) + '</small><br><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.url) + '</a></div>').join("");
+    fields.forEach(([id]) => document.getElementById(id).value = "");
+  };
+</script>
+</body>
+</html>
