@@ -19,3 +19,12 @@ jobs:
         env:
           RECEIVER_URL: http://127.0.0.1:5001
         run: python build_report.py
+
+      - name: Email the report
+        if: always()
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+        run: python send_email.py

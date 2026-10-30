@@ -33,6 +33,11 @@ report = {
     },
 }
 
+# Save a local copy first, so the email step can use it
+with open("final-report.json", "w") as f:
+    json.dump(report, f, indent=2)
+
+# Send the report to the local receiver
 url = os.environ.get("RECEIVER_URL", "http://127.0.0.1:5001")
 response = requests.post(url, json=report, timeout=30)
 print("Receiver responded:", response.status_code)
